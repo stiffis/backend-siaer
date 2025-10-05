@@ -77,5 +77,32 @@ class SolarSystemService:
             'planets': planets,
         }
 
+    def get_planet_states_j2000(self) -> Dict[str, Any]:
+        """Devuelve los elementos orbitales J2000 sin variación temporal."""
+        
+        planets = []
+        for planet in PLANETARY_ELEMENTS:
+            planets.append({
+                'name': planet.name,
+                'color': planet.color,
+                'orbitColor': planet.orbit_color,
+                'radiusKm': planet.radius_km,
+                'semiMajorAxisKm': planet.semi_major_axis_au * AU_IN_KM,
+                'eccentricity': planet.eccentricity,
+                'inclinationDeg': planet.inclination_deg,
+                'longitudeOfAscendingNodeDeg': planet.longitude_of_ascending_node_deg,
+                'argumentOfPeriapsisDeg': planet.argument_of_periapsis_deg,
+                'meanAnomalyDeg': planet.mean_anomaly_deg,  # Valor J2000 original
+                'orbitalPeriodDays': planet.orbital_period_days,
+            })
+
+        return {
+            'generatedAt': self.reference_epoch.isoformat(),
+            'referenceEpoch': self.reference_epoch.isoformat(),
+            'sunRadiusKm': SUN_RADIUS_KM,
+            'planets': planets,
+            'note': 'J2000 orbital elements without temporal variation'
+        }
+
 
 __all__ = ['SolarSystemService', 'SUN_RADIUS_KM']

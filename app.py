@@ -50,7 +50,9 @@ def home():
             "/api/orbital/presets": "GET - Obtener presets predefinidos",
             "/api/neo/search": "GET - Buscar objetos NEO (proxy SBDB)",
             "/api/neo/object": "GET - Obtener datos de un NEO desde NASA",
-            "/api/solar/system": "GET - Estados orbitales aproximados del sistema solar"
+            "/api/solar/system": "GET - Estados orbitales aproximados del sistema solar",
+            "/api/solar/system/j2000": "GET - Elementos orbitales J2000 sin variación temporal",
+            "/api/impactor/2025": "GET - Datos del meteorito IMPACTOR-2025"
         }
     })
 
@@ -264,6 +266,75 @@ def get_solar_system_state():
         "data": data,
     })
 
+
+@app.route('/api/solar/system/j2000', methods=['GET'])
+def get_solar_system_j2000():
+    """Devuelve los elementos orbitales J2000 sin variación temporal."""
+    
+    try:
+        data = solar_system_service.get_planet_states_j2000()
+        return jsonify({
+            "success": True,
+            "data": data,
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Error al obtener datos J2000 del sistema solar",
+            "details": str(e)
+        }), 500
+
+
+@app.route('/api/impactor/2025', methods=['GET'])
+def get_impactor_2025():
+    """Obtiene los datos del meteorito IMPACTOR-2025."""
+    
+    try:
+        # Datos del meteorito IMPACTOR-2025
+        impactor_data = {
+            "name": "IMPACTOR-2025",
+            "designation": "IMPACTOR-2025",
+            "full_name": "IMPACTOR-2025",
+            "description": "Meteorito hipotético con trayectoria de impacto potencial",
+            "color": "#ff4444",
+            "orbitColor": "#ff6666",
+            "radiusKm": 0.5,  # Radio más realista para un meteorito (500 metros)
+            "semiMajorAxisKm": 149_597_870.7,  # Misma órbita que la Tierra (1 AU)
+            "eccentricity": 0.0001,  # Órbita casi circular
+            "inclinationDeg": 0.0,  # Coplana con la Tierra
+            "longitudeOfAscendingNodeDeg": 0.0,
+            "argumentOfPeriapsisDeg": 0.0,
+            "meanAnomalyDeg": 10.72,  # Igual que la Tierra para sincronizar la posición inicial
+            "orbitalPeriodDays": 365.256,  # Periodo orbital terrestre
+            "isNeo": True,
+            "pha": True,  # Potencialmente peligroso
+            "moid_au": 0.0,
+            "absolute_magnitude_h": 18.5,  # Magnitud estimada
+            "orbit_class": "Apollo",
+            "warning": "⚠️ Objeto con trayectoria de impacto potencial - ÓRBITA MUY PELIGROSA",
+            "simulation_elements": {
+                "a": 149_597_870.7,
+                "e": 0.0001,
+                "i": 0.0,
+                "omega": 0.0,
+                "Omega": 0.0,
+                "M0": 10.72,
+                "mu": 1.32712440018e11  # Constante gravitacional solar
+            }
+        }
+        
+        return jsonify({
+            "success": True,
+            "data": impactor_data
+        })
+        
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": "Error al obtener datos de IMPACTOR-2025",
+            "details": str(e)
+        }), 500
+
 # === MANEJO DE ERRORES ===
 
 @app.errorhandler(404)
@@ -278,7 +349,9 @@ def not_found(error):
             "/api/orbital/presets",
             "/api/neo/search",
             "/api/neo/object",
-            "/api/solar/system"
+            "/api/solar/system",
+            "/api/solar/system/j2000",
+            "/api/impactor/2025"
         ]
     }), 404
 
@@ -308,6 +381,8 @@ if __name__ == '__main__':
     print("   GET  /api/neo/search - Buscar objetos NEO (SBDB Query)")
     print("   GET  /api/neo/object - Obtener datos de NEO desde NASA")
     print("   GET  /api/solar/system - Estados orbitales del sistema solar")
+    print("   GET  /api/solar/system/j2000 - Elementos orbitales J2000 sin variación temporal")
+    print("   GET  /api/impactor/2025 - Datos del meteorito IMPACTOR-2025")
     print()
     
     app.run(

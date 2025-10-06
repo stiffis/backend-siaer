@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, List
 import math
 
@@ -78,10 +78,19 @@ class SolarSystemService:
         }
 
     def get_planet_states_j2000(self) -> Dict[str, Any]:
-        """Devuelve los elementos orbitales J2000 sin variación temporal."""
+        """Devuelve los elementos orbitales J2000 con variación temporal fija."""
+        
+        # Tiempo fijo desde J2000 (ejemplo: 24 años = 2024)
+        fixed_delta_seconds = 24 * 365.25 * 86400  # 24 años en segundos
         
         planets = []
         for planet in PLANETARY_ELEMENTS:
+            # Calcular anomalía media con tiempo fijo
+            mean_motion = 2 * math.pi / (planet.orbital_period_days * 86400.0)
+            mean_anomaly_rad = math.radians(planet.mean_anomaly_deg)
+            mean_anomaly_now = (mean_anomaly_rad + mean_motion * fixed_delta_seconds) % (2 * math.pi)
+            mean_anomaly_deg_now = math.degrees(mean_anomaly_now)
+            
             planets.append({
                 'name': planet.name,
                 'color': planet.color,
@@ -92,16 +101,20 @@ class SolarSystemService:
                 'inclinationDeg': planet.inclination_deg,
                 'longitudeOfAscendingNodeDeg': planet.longitude_of_ascending_node_deg,
                 'argumentOfPeriapsisDeg': planet.argument_of_periapsis_deg,
-                'meanAnomalyDeg': planet.mean_anomaly_deg,  # Valor J2000 original
+                'meanAnomalyDeg': mean_anomaly_deg_now,  # Valor con variación temporal fija
                 'orbitalPeriodDays': planet.orbital_period_days,
             })
 
+        # Fecha fija calculada
+        fixed_date = self.reference_epoch + timedelta(seconds=fixed_delta_seconds)
+
         return {
-            'generatedAt': self.reference_epoch.isoformat(),
+            'generatedAt': fixed_date.isoformat(),
             'referenceEpoch': self.reference_epoch.isoformat(),
             'sunRadiusKm': SUN_RADIUS_KM,
             'planets': planets,
-            'note': 'J2000 orbital elements without temporal variation'
+            'note': 'J2000 orbital elements with fixed temporal variation (24 years)',
+            'temporalOffset': '24 years from J2000'
         }
 
 
